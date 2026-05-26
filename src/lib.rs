@@ -1,4 +1,4 @@
-//! supply-depot — Sovereign registry proxy/cache and supply-chain policy POC backed by Starmetal.
+//! gear-depot — Sovereign registry proxy/cache and supply-chain policy POC backed by Starmetal.
 //!
 //! This crate is intentionally a minimal skeleton. The first implementation
 //! increments must keep the upstream boundary explicit and preserve the
@@ -15,7 +15,7 @@ pub struct ProjectCard {
 
 /// The repository's initial scope card.
 pub const PROJECT: ProjectCard = ProjectCard {
-    name: "supply-depot",
+    name: "gear-depot",
     role: "sovereign supply-chain depot",
     upstream: "Starmetal",
     relationship: "Infrastructure POC for registry caching and policy enforcement; not critical production path until promoted.",
@@ -35,7 +35,7 @@ mod tests {
 
     #[test]
     fn project_card_names_the_repo_and_upstream() {
-        assert_eq!(PROJECT.name, "supply-depot");
+        assert_eq!(PROJECT.name, "gear-depot");
         assert_eq!(PROJECT.upstream, "Starmetal");
         assert!(summary().contains(PROJECT.role));
     }

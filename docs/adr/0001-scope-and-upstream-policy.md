@@ -6,11 +6,11 @@
 
 ## Context
 
-`supply-depot` is a companion repository in the Presto-Matic / Agent-O-Matic ecosystem. Its role is **sovereign supply-chain depot**. It is intentionally separate from the Presto-Matic product repo so heavy dependencies, operational lifecycle, and upstream tracking stay isolated.
+`gear-depot` is a companion repository in the Presto-Matic / cos-matic ecosystem. Its role is **sovereign supply-chain depot**. It is intentionally separate from the Presto-Matic product repo so heavy dependencies, operational lifecycle, and upstream tracking stay isolated.
 
 ## Decision
 
-Build `supply-depot` as an upstream-first, sovereign Rust project:
+Build `gear-depot` as an upstream-first, sovereign Rust project:
 
 - track upstream releases/tags/commits explicitly;
 - keep local patches small and temporary;

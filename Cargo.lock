@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "supply-depot"
+name = "gear-depot"
 version = "0.0.0"

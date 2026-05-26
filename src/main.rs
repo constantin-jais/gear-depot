@@ -1,3 +1,3 @@
 fn main() {
-    println!("{}", supply_depot::summary());
+    println!("{}", gear_depot::summary());
 }
