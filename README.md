@@ -6,6 +6,15 @@
 
 ---
 
+## Stack Role
+
+- **Maturity:** `contract-first`.
+- **Current increment:** P0 artifact contract.
+- **Learning value:** artifact trust, safe metadata, retention, provenance, and supply-chain policy.
+- **Next quality step:** add storage/cache policy and integrate real handoff/report artifacts.
+
+See the ecosystem cockpit in [`constantin-jais/ecosystem/status.md`](https://github.com/constantin-jais/constantin-jais/blob/main/ecosystem/status.md).
+
 ## Purpose
 
 `gear-depot` is the logistics and trust layer of the ecosystem. It handles how artifacts — code, packages, models, datasets, build outputs — are cached, verified, governed, and distributed.
