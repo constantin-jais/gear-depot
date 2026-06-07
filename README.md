@@ -1,19 +1,53 @@
 # Gear Depot
 
+[![CI](https://github.com/constantin-jais/gear-depot/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/constantin-jais/gear-depot/actions/workflows/ci.yml)
+[![Security](https://github.com/constantin-jais/gear-depot/actions/workflows/security.yml/badge.svg?branch=main)](https://github.com/constantin-jais/gear-depot/actions/workflows/security.yml)
+[![Contracts](https://github.com/constantin-jais/gear-depot/actions/workflows/contracts.yml/badge.svg?branch=main)](https://github.com/constantin-jais/gear-depot/actions/workflows/contracts.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 **Layer:** Gear — Infrastructure  
 **Role:** sovereign artifact depot and policy gate  
 **Mission:** verify, cache, proxy, and distribute artifacts with integrity, provenance, and supply-chain control.
 
 ---
 
-## Stack Role
+## Stack role
 
+- **Layer:** Gear — Infrastructure.
+- **Role:** sovereign artifact depot and policy gate.
+- **Mission:** verify, cache, proxy, and distribute artifacts with integrity, provenance, and supply-chain control.
 - **Maturity:** `contract-first`.
+- **Scale-ready:** no — contracts/tests exist, but storage/cache policy and real artifact integrations are still next steps.
 - **Current increment:** P0 artifact contract.
 - **Learning value:** artifact trust, safe metadata, retention, provenance, and supply-chain policy.
 - **Next quality step:** add storage/cache policy and integrate real handoff/report artifacts.
 
 See the ecosystem cockpit in [`constantin-jais/ecosystem/status.md`](https://github.com/constantin-jais/constantin-jais/blob/main/ecosystem/status.md).
+
+## Dogfooding
+
+This repository is part of the forge dogfooding loop: the ecosystem should use its own tools to make specs, maturity, contracts, releases, and product documentation observable.
+
+Current visible evidence:
+
+- contract and security workflows exercise artifact and policy assumptions;
+- README maturity notes keep storage/cache limits explicit;
+- fixtures and contracts frame provenance and retention behavior.
+
+Expected next evidence:
+
+- publish example artifact manifests and policy reports;
+- show Gear Cable handoff evidence through fixture-backed workflows.
+
+Dogfooding claims should stay backed by visible commands, fixtures, CI workflows, generated reports, or linked docs.
+
+## Forge role
+
+`gear-depot` is Gear supply-chain infrastructure. It gives Rumble products, Bolt workflows, and Wrench tools a governed place for verified artifacts, manifests, provenance, retention, and distribution policy.
+
+## Boundary
+
+It must not become a generic file store, release planner, memory substrate, product workflow, or orchestrator. Release wiring belongs to `gear-cable`; memory belongs to `gear-memory`; product and execution decisions stay above it.
 
 ## Purpose
 
