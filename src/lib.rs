@@ -6,6 +6,8 @@
 
 use std::collections::BTreeMap;
 use std::fmt;
+use std::fs;
+use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -164,6 +166,37 @@ impl fmt::Display for ManifestValidationError {
 
 impl std::error::Error for ManifestValidationError {}
 
+#[derive(Debug)]
+pub enum ArtifactManifestBuildError {
+    Read(std::io::Error),
+    Json(serde_json::Error),
+    MissingField(String),
+    UnsupportedFormat {
+        expected: &'static str,
+        actual: String,
+    },
+    Validation(ManifestValidationError),
+}
+
+impl fmt::Display for ArtifactManifestBuildError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Read(error) => write!(formatter, "failed to read artifact input: {error}"),
+            Self::Json(error) => write!(formatter, "artifact input is not valid JSON: {error}"),
+            Self::MissingField(path) => write!(formatter, "missing required field `{path}`"),
+            Self::UnsupportedFormat { expected, actual } => {
+                write!(
+                    formatter,
+                    "expected artifact format `{expected}`, got `{actual}`"
+                )
+            }
+            Self::Validation(error) => write!(formatter, "artifact manifest is invalid: {error}"),
+        }
+    }
+}
+
+impl std::error::Error for ArtifactManifestBuildError {}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ArtifactManifest {
     pub manifest_id: String,
@@ -177,6 +210,82 @@ pub struct ArtifactManifest {
 }
 
 impl ArtifactManifest {
+    pub fn from_wrench_evidence_report_file(
+        path: &Path,
+    ) -> Result<Self, ArtifactManifestBuildError> {
+        let bytes = fs::read(path).map_err(ArtifactManifestBuildError::Read)?;
+        let payload: serde_json::Value =
+            serde_json::from_slice(&bytes).map_err(ArtifactManifestBuildError::Json)?;
+        ArtifactManifest::from_wrench_evidence_report_value(&payload, &bytes)
+    }
+
+    pub fn from_wrench_evidence_report_value(
+        payload: &serde_json::Value,
+        bytes: &[u8],
+    ) -> Result<Self, ArtifactManifestBuildError> {
+        let format = require_json_string(payload, &["format"])?;
+        if format != "wrench.evidence_report.v0.1" {
+            return Err(ArtifactManifestBuildError::UnsupportedFormat {
+                expected: "wrench.evidence_report.v0.1",
+                actual: format.to_string(),
+            });
+        }
+
+        let report_id = require_json_string(payload, &["report_id"])?;
+        let generated_at = require_json_string(payload, &["generated_at"])?;
+        let producer = require_json_string(payload, &["producer", "name"])?;
+        let version = require_json_string(payload, &["producer", "version"]).unwrap_or("0.1.0");
+        let subject_kind = require_json_string(payload, &["subject", "kind"]).unwrap_or("unknown");
+        let subject_ref =
+            require_json_string(payload, &["subject", "reference"]).unwrap_or("unknown");
+        let status = require_json_string(payload, &["status"]).unwrap_or("unknown");
+        let source_report_hash =
+            require_json_string(payload, &["source_report", "hash"]).unwrap_or("unknown");
+        let artifact_hash = sha256_prefixed(bytes);
+        let checksum_value = artifact_hash.clone();
+        let manifest_id = format!("manifest:{report_id}");
+
+        let manifest = ArtifactManifest {
+            manifest_id: manifest_id.clone(),
+            artifact: ArtifactRef {
+                artifact_id: format!("artifact:{report_id}"),
+                artifact_type: ArtifactType::InspectionReport,
+                producer: producer.to_string(),
+                version: version.to_string(),
+                hash: artifact_hash,
+                manifest_ref: manifest_id,
+                state: ArtifactState::Active,
+                created_at: generated_at.to_string(),
+            },
+            package_type: PackageType::JsonBundle,
+            checksums: vec![Checksum {
+                algorithm: ChecksumAlgorithm::Sha256,
+                value: checksum_value,
+            }],
+            provenance_id: format!("provenance:{report_id}"),
+            retention: RetentionMetadata::default(),
+            distribution: DistributionMetadata::default(),
+            metadata: SafeMetadata::from_pairs([
+                (
+                    "source_format".to_string(),
+                    "wrench.evidence_report.v0.1".to_string(),
+                ),
+                ("subject_kind".to_string(), subject_kind.to_string()),
+                ("subject_ref".to_string(), subject_ref.to_string()),
+                ("evidence_status".to_string(), status.to_string()),
+                (
+                    "source_report_hash".to_string(),
+                    source_report_hash.to_string(),
+                ),
+            ]),
+        };
+
+        manifest
+            .validate()
+            .map_err(ArtifactManifestBuildError::Validation)?;
+        Ok(manifest)
+    }
+
     pub fn validate(&self) -> Result<(), ManifestValidationError> {
         validate_non_empty_field("manifest_id", &self.manifest_id)?;
         validate_non_empty_field("provenance_id", &self.provenance_id)?;
@@ -290,6 +399,31 @@ impl fmt::Debug for SafeMetadata {
             .field(&redacted)
             .finish()
     }
+}
+
+fn require_json_string<'a>(
+    value: &'a serde_json::Value,
+    path: &[&str],
+) -> Result<&'a str, ArtifactManifestBuildError> {
+    let mut current = value;
+    for segment in path {
+        current = current
+            .get(*segment)
+            .ok_or_else(|| ArtifactManifestBuildError::MissingField(path.join(".")))?;
+    }
+    current
+        .as_str()
+        .filter(|value| !value.trim().is_empty())
+        .ok_or_else(|| ArtifactManifestBuildError::MissingField(path.join(".")))
+}
+
+fn sha256_hex(bytes: &[u8]) -> String {
+    let digest = Sha256::digest(bytes);
+    to_lower_hex(&digest)
+}
+
+fn sha256_prefixed(bytes: &[u8]) -> String {
+    format!("sha256:{}", sha256_hex(bytes))
 }
 
 fn to_lower_hex(bytes: &[u8]) -> String {

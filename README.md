@@ -51,11 +51,11 @@ See:
 
 ## Forge role
 
-`gear-depot` is Gear supply-chain infrastructure. It gives Rumble products, Bolt workflows, and Wrench tools a governed place for verified artifacts, manifests, provenance, retention, and distribution policy.
+`gear-depot` is Gear supply-chain infrastructure. It gives Rumble products, Portal client builds, Bolt workflows, and Wrench tools a governed place for verified artifacts, manifests, provenance, retention, and distribution policy.
 
 ## Boundary
 
-It must not become a generic file store, release planner, memory substrate, product workflow, or orchestrator. Release wiring belongs to `gear-cable`; memory belongs to `gear-memory`; product and execution decisions stay above it.
+It must not become a generic file store, release planner, memory substrate, client-platform/design-system owner, product workflow, or orchestrator. Portal owns client UI semantics; release wiring belongs to `gear-cable`; memory belongs to `gear-memory`; product and execution decisions stay above it.
 
 ## Purpose
 
@@ -74,6 +74,7 @@ It exists to make supply chains sovereign and auditable.
 ## Does Not Own
 
 - Product UX: belongs to Rumble.
+- Client platform semantics, design tokens, components, accessibility, and native adapters: belongs to Portal.
 - Release planning and cross-target packaging: belongs to `gear-cable`.
 - Memory/search semantics: belongs to `gear-memory`.
 - Orchestration decisions: belongs to Bolt.
@@ -103,6 +104,16 @@ It exists to make supply chains sovereign and auditable.
 Rumble products own artifact-producing workflows and UX. `gear-cable` owns
 release planning and build provenance. `gear-depot` owns verification, trust
 state, retention, revocation, and distribution availability.
+
+The CLI can materialize a Wrench evidence report as a Gear artifact manifest:
+
+```sh
+gear-depot manifest evidence-report wrench-portal-evidence.json --json
+```
+
+This reads a local `wrench.evidence_report.v0.1`, computes the artifact SHA-256,
+and emits an `ArtifactManifest` with `artifact_type=inspection_report`. Gear
+records integrity/provenance metadata; it does not interpret Wrench findings.
 
 ## Validation Rules
 
